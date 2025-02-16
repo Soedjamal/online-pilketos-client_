@@ -224,7 +224,7 @@ const VotePage = () => {
         if (voterError) throw voterError;
 
         const { error: updateError } = await supabase
-          .from("students_x")
+          .from("teacher_and_staff")
           .update({ voted: true })
           .eq("id", voterId);
 

@@ -99,7 +99,7 @@ const LoginToken = () => {
 
       if (token.slice(0, 2) === "TS") {
         const { data, error: dbError } = await supabase
-          .from("teacher")
+          .from("teacher_and_staff")
           .select("*")
           .eq("token", token)
           .single();
