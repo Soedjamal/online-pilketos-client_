@@ -54,11 +54,18 @@ const VotePage = () => {
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_xii")
-          .select("id, name")
+          .select("id, name, voted")
           .eq("token", token)
           .single();
 
         if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
+
+        if (userData.voted == true) {
+          setError("Kamu sudah pernah memilih");
+          localStorage.removeItem("userToken");
+          setTimeout(() => navigate("/"), 1200);
+          return;
+        }
 
         const voterId = userData.id;
 
@@ -101,11 +108,18 @@ const VotePage = () => {
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_xi")
-          .select("id, name")
+          .select("id, name, voted")
           .eq("token", token)
           .single();
 
         if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
+
+        if (userData.voted == true) {
+          setError("Kamu sudah pernah memilih");
+          localStorage.removeItem("userToken");
+          setTimeout(() => navigate("/"), 1200);
+          return;
+        }
 
         const voterId = userData.id;
 
@@ -148,11 +162,18 @@ const VotePage = () => {
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_x")
-          .select("id, name")
+          .select("id, name, voted")
           .eq("token", token)
           .single();
 
         if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
+
+        if (userData.voted == true) {
+          setError("Kamu sudah pernah memilih");
+          localStorage.removeItem("userToken");
+          setTimeout(() => navigate("/"), 1200);
+          return;
+        }
 
         const voterId = userData.id;
 
@@ -195,11 +216,18 @@ const VotePage = () => {
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("teacher_and_staff")
-          .select("id, name")
+          .select("id, name, voted")
           .eq("token", token)
           .single();
 
         if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
+
+        if (userData.voted == true) {
+          setError("Kamu sudah pernah memilih");
+          localStorage.removeItem("userToken");
+          setTimeout(() => navigate("/"), 1200);
+          return;
+        }
 
         const voterId = userData.id;
         const { error: voteError } = await supabase.rpc("increment_votes", {
