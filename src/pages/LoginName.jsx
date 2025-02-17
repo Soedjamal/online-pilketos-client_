@@ -34,45 +34,27 @@ const LoginName = () => {
     }
 
     try {
-      console.log(name.slice(-5));
-      console.log(currentName.slice(-5));
+      const inputStartName = name.slice(0, 5)
+      const currStartName = currentName.slice(0, 5)
 
-      function normalizeName(name) {
-        return name.toLowerCase().replace(/[-']/g, "").trim();
-      }
+      const inputLastName = name.slice(-5)
+      const currLastName = currentName.slice(-5)
 
-      const normalizedInput = normalizeName(name);
+      if (inputStartName == currStartName || inputLastName == currLastName) {
+        const { data, error: dbError } = await supabase
+          .from("students_xii")
+          .select("*")
+          .ilike("name", currName) // Pencarian lebih longgar
+          .single();
 
-      // Query ke Supabase (Mencari nama yang mengandung salah satu kata dari input)
-      const { data, error: dbError } = await supabase
-        .from("students_xii")
-        .select("*")
-        .ilike("name", `%${normalizedInput}%`) // Pencarian lebih longgar
-        .single();
-
-      if (dbError || !data) {
-        setError("Nama tidak valid");
-      } else {
-        const normalizedDbName = normalizeName(data.name);
-
-        // Split nama menjadi array kata-kata untuk dicek satu per satu
-        const inputWords = normalizedInput.split(" ");
-        const dbWords = normalizedDbName.split(" ");
-
-        // Cek apakah semua kata dalam input ada dalam database
-        const isValid = inputWords.every((word) =>
-          dbWords.some((dbWord) => dbWord.includes(word)),
-        );
-
-        if (!isValid) {
+        if (dbError || !data) {
           setError("Nama tidak valid");
         }
-      }
-
-      // Cek status voted
-      if (data.voted) {
-        setError(`${data.name}, kamu sudah pernah memilih`);
-        return;
+        // Cek status voted
+        if (data.voted) {
+          setError(`${data.name}, kamu sudah pernah memilih`);
+          return;
+        }
       }
 
       // Simpan data ke localStorage jika diperlukan
