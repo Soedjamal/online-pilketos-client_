@@ -119,7 +119,7 @@ const VotePage = () => {
 
         if (voteError) throw voteError;
 
-        const { error: voterError } = await supabase.from("voters").insert([
+        const { error: voterError } = await supabase.from("xi_voters").insert([
           {
             voter_name: userData.name,
             has_voted: candidateId,
@@ -166,7 +166,7 @@ const VotePage = () => {
 
         if (voteError) throw voteError;
 
-        const { error: voterError } = await supabase.from("voters").insert([
+        const { error: voterError } = await supabase.from("x_voters").insert([
           {
             voter_name: userData.name,
             has_voted: candidateId,
@@ -212,7 +212,7 @@ const VotePage = () => {
 
         if (voteError) throw voteError;
 
-        const { error: voterError } = await supabase.from("voters").insert([
+        const { error: voterError } = await supabase.from("ts_voters").insert([
           {
             voter_name: userData.name,
             has_voted: candidateId,
