@@ -44,7 +44,7 @@ const LoginName = () => {
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
-          .ilike("name", currName) // Pencarian lebih longgar
+          .ilike("name", currentName) // Pencarian lebih longgar
           .single();
 
         if (dbError || !data) {
