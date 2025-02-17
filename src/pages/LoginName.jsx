@@ -34,22 +34,39 @@ const LoginName = () => {
     }
 
     try {
-      if (name.slice(-5) !== currentName.slice(-5)) {
-        setError("Nama tidak valid");
-        return;
+      console.log(name.slice(-5));
+      console.log(currentName.slice(-5));
+
+      function normalizeName(name) {
+        return name.toLowerCase().replace(/[-']/g, "").trim();
       }
 
-      // Query data siswa XII
+      const normalizedInput = normalizeName(name);
+
+      // Query ke Supabase (Mencari nama yang mengandung salah satu kata dari input)
       const { data, error: dbError } = await supabase
         .from("students_xii")
         .select("*")
-        .ilike("name", `%${name.trim()}%`)
+        .ilike("name", `%${normalizedInput}%`) // Pencarian lebih longgar
         .single();
 
-      // Handle error atau data tidak ditemukan
       if (dbError || !data) {
-        setError("Nama tidak terdaftar!");
-        return;
+        setError("Nama tidak valid");
+      } else {
+        const normalizedDbName = normalizeName(data.name);
+
+        // Split nama menjadi array kata-kata untuk dicek satu per satu
+        const inputWords = normalizedInput.split(" ");
+        const dbWords = normalizedDbName.split(" ");
+
+        // Cek apakah semua kata dalam input ada dalam database
+        const isValid = inputWords.every((word) =>
+          dbWords.some((dbWord) => dbWord.includes(word)),
+        );
+
+        if (!isValid) {
+          setError("Nama tidak valid");
+        }
       }
 
       // Cek status voted
