@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TextField,
@@ -12,15 +12,9 @@ import { supabase } from "../lib/supabase";
 
 const LoginName = () => {
   const [name, setName] = useState("");
-  const [currentName, setCurrentName] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const crrName = localStorage.getItem("userName");
-    setCurrentName(crrName);
-  }, []);
 
   const handleSubmit = async (e) => {
     setLoading(true);
@@ -34,31 +28,43 @@ const LoginName = () => {
     }
 
     try {
-      const inputStartName = name.slice(0, 5)
-      const currStartName = currentName.slice(0, 5)
+      const currentName = localStorage.getItem("userName");
 
-      const inputLastName = name.slice(-5)
-      const currLastName = currentName.slice(-5)
+      if (
+        !currentName ||
+        typeof currentName !== "string" ||
+        currentName.length < 5
+      ) {
+        setError("Nama tidak valid atau belum tersimpan.");
+        return;
+      }
 
-      if (inputStartName == currStartName || inputLastName == currLastName) {
+      const inputStartName = name.slice(0, 5);
+      const inputLastName = name.slice(-5);
+      const currStartName = currentName.slice(0, 5);
+      const currLastName = currentName.slice(-5);
+
+      if (inputStartName === currStartName || inputLastName === currLastName) {
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
-          .ilike("name", currentName) // Pencarian lebih longgar
+          .ilike("name", currentName)
           .single();
 
         if (dbError || !data) {
           setError("Nama tidak valid");
+          return;
         }
-        // Cek status voted
+
         if (data.voted) {
           setError(`${data.name}, kamu sudah pernah memilih`);
           return;
         }
-      }
 
-      // Simpan data ke localStorage jika diperlukan
-      localStorage.setItem("userId", data.id);
+        localStorage.setItem("userId", data.id);
+      } else {
+        setError("Nama tidak sesuai dengan yang terdaftar.");
+      }
 
       navigate("/vote");
     } catch (err) {
