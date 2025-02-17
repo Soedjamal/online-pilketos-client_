@@ -64,6 +64,7 @@ const LoginName = () => {
         localStorage.setItem("userId", data.id);
       } else {
         setError("Nama tidak sesuai dengan yang terdaftar.");
+        return;
       }
 
       navigate("/vote");
