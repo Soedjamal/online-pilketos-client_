@@ -28,12 +28,7 @@ const LoginToken = () => {
     }
 
     try {
-      if (token) {
-
-        if (token.slice(0, 3) !== "XII") {
-          setError("Token tidak valid! Periksa kembali token Anda.");
-          return;
-        }
+      if (token.slice(0, 3) == "XII") {
 
         const { data, error: dbError } = await supabase
           .from("students_xii")
@@ -57,11 +52,8 @@ const LoginToken = () => {
         return;
       }
 
-      if (token) {
-        if (token.slice(0, 2) !== "XI") {
-          setError("Token tidak valid! Periksa kembali token Anda.");
-          return;
-        }
+      if (token.slice(0, 2) == "XI") {
+
         const { data, error: dbError } = await supabase
           .from("students_xi")
           .select("*")
@@ -84,11 +76,8 @@ const LoginToken = () => {
         return;
       }
 
-      if (token) {
-        if (token.slice(0, 1) == "X") {
-          setError("Token tidak valid! Periksa kembali token Anda.");
-          return;
-        }
+      if (token.slice(0, 1) == "X") {
+
         const { data, error: dbError } = await supabase
           .from("students_x")
           .select("*")
@@ -111,11 +100,7 @@ const LoginToken = () => {
         return;
       }
 
-      if (token) {
-        if (token.slice(0, 2) === "TS") {
-          setError("Token tidak valid! Periksa kembali token Anda.");
-          return;
-        }
+      if (token.slice(0, 2) == "TS") {
         const { data, error: dbError } = await supabase
           .from("teacher_and_staff")
           .select("*")
@@ -137,6 +122,7 @@ const LoginToken = () => {
         navigate("/vote");
         return;
       }
+
     } catch (err) {
       setLoading(false);
       setError("Terjadi kesalahan, coba lagi.");
