@@ -17,7 +17,7 @@ import { supabase } from "../lib/supabase";
 const VotePage = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState({});
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ const VotePage = () => {
   }, []);
 
   const handleVote = async (candidateId) => {
-    setSubmitLoading(true);
+    setSubmitLoading((prev) => ({ ...prev, [candidateId]: true }));
     const token = localStorage.getItem("userToken");
 
     try {
@@ -269,7 +269,6 @@ const VotePage = () => {
       setError("Gagal mengirim suara, coba lagi.");
     } finally {
       localStorage.removeItem("userToken");
-      setSubmitLoading(false);
     }
   };
 
@@ -301,7 +300,11 @@ const VotePage = () => {
         >
           Pilih salah satu pasangan calon ketua dan wakil ketua OSIS
         </Typography>
-
+        {message && (
+          <Alert severity="success" sx={{ mt: 2, mb: 4 }}>
+            {message}
+          </Alert>
+        )}
         {/* Jika kandidat kosong, tampilkan pesan */}
         {candidates.length === 0 ? (
           <Typography variant="h6" color="textSecondary">
@@ -345,7 +348,7 @@ const VotePage = () => {
                     <Button
                       type="submit"
                       variant="outlined"
-                      disabled={submitLoading}
+                      disabled={submitLoading[candidate.id]}
                       onClick={() => handleVote(candidate.id)}
                       sx={{ mt: 2 }}
                       style={{
@@ -357,7 +360,7 @@ const VotePage = () => {
                       }}
                       fullWidth
                     >
-                      {submitLoading
+                      {submitLoading[candidate.id]
                         ? "Mengirim.."
                         : `Pilih Paslon ${candidate.paslon_ke}`}
                     </Button>
@@ -365,11 +368,6 @@ const VotePage = () => {
                 </Card>
               </Grid>
             ))}
-            {message && (
-              <Alert severity="success" sx={{ mt: 2 }}>
-                {message}
-              </Alert>
-            )}
           </Grid>
         )}
 

@@ -29,7 +29,6 @@ const LoginToken = () => {
 
     try {
       if (token.slice(0, 3) == "XII") {
-
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
@@ -50,10 +49,11 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/input-name");
         return;
+      } else {
+        setError("Token tidak valid! Periksa kembali token Anda.");
       }
 
       if (token.slice(0, 2) == "XI") {
-
         const { data, error: dbError } = await supabase
           .from("students_xi")
           .select("*")
@@ -74,10 +74,11 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/vote");
         return;
+      } else {
+        setError("Token tidak valid! Periksa kembali token Anda.");
       }
 
       if (token.slice(0, 1) == "X") {
-
         const { data, error: dbError } = await supabase
           .from("students_x")
           .select("*")
@@ -98,6 +99,8 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/vote");
         return;
+      } else {
+        setError("Token tidak valid! Periksa kembali token Anda.");
       }
 
       if (token.slice(0, 2) == "TS") {
@@ -121,8 +124,9 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/vote");
         return;
+      } else {
+        setError("Token tidak valid! Periksa kembali token Anda.");
       }
-
     } catch (err) {
       setLoading(false);
       setError("Terjadi kesalahan, coba lagi.");
