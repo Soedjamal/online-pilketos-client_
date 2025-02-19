@@ -30,15 +30,15 @@ const LoginToken = () => {
     try {
       if (token.slice(0, 3) == "XII") {
 
-        const now = new Date()
-        const day = now.getDay()
-        const hour = now.getHours()
+        // const now = new Date()
+        // const day = now.getDay()
+        // const hour = now.getHours()
 
-        if (day !== 5 || hour < 19 || hour >= 21) {
-          setError(`Waktu pemilihan belum dimulai!, Dimulai pukul 19:00 - 21:00 WIB`);
-          setLoading(false);
-          return
-        }
+        // if (day !== 3 || hour < 11 || hour >= 12) {
+        //   setError(`Waktu pemilihan belum dimulai!, Dimulai pukul 19:00 - 21:00 WIB`);
+        //   setLoading(false);
+        //   return
+        // }
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
