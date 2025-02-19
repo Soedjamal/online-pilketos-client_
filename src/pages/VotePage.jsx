@@ -48,6 +48,7 @@ const VotePage = () => {
   const handleVote = async (candidateId) => {
     setSubmitLoading((prev) => ({ ...prev, [candidateId]: true }));
     const token = localStorage.getItem("userToken");
+    // const nisn = localStorage.getItem("userNISN");
 
     try {
       if (token.slice(0, 3) == "XII") {
@@ -110,13 +111,12 @@ const VotePage = () => {
         localStorage.removeItem("userToken");
         localStorage.removeItem("userName");
         localStorage.removeItem("userId");
+        localStorage.removeItem("userNISN");
         setTimeout(() => navigate("/success"), 2000);
         return;
       }
 
       if (token.slice(0, 2) == "XI") {
-
-
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_xi")

@@ -10,8 +10,8 @@ import {
 } from "@mui/material";
 import { supabase } from "../lib/supabase";
 
-const LoginName = () => {
-  const [name, setName] = useState("");
+const LoginNISN = () => {
+  const [nisn, setNisn] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,38 +21,33 @@ const LoginName = () => {
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
-      setError("Nama tidak boleh kosong!");
+    if (!nisn.trim()) {
+      setError("NISN tidak boleh kosong!");
       setLoading(false);
       return;
     }
 
     try {
-      const currentName = localStorage.getItem("userName");
+      const currentNisn = localStorage.getItem("userNISN");
 
       if (
-        !currentName ||
-        typeof currentName !== "string" ||
-        currentName.length < 5
+        !currentNisn ||
+        typeof currentNisn !== "string" ||
+        currentNisn.length < 5
       ) {
-        setError("Nama tidak valid atau belum tersimpan.");
+        setError("NISN tidak valid atau belum tersimpan.");
         return;
       }
 
-      const inputStartName = name.slice(0, 5);
-      const inputLastName = name.slice(-5);
-      const currStartName = currentName.slice(0, 5);
-      const currLastName = currentName.slice(-5);
-
-      if (inputStartName === currStartName || inputLastName === currLastName) {
+      if (nisn == currentNisn) {
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
-          .ilike("name", currentName)
+          .eq("nisn", currentNisn)
           .single();
 
         if (dbError || !data) {
-          setError("Nama tidak valid");
+          setError("NISN tidak valid");
           return;
         }
 
@@ -60,15 +55,12 @@ const LoginName = () => {
           setError(`${data.name}, kamu sudah pernah memilih`);
           return;
         }
-
-        localStorage.setItem("userId", data.id);
-        localStorage.setItem("userNISN", data.nisn);
       } else {
-        setError("Nama tidak sesuai dengan yang terdaftar.");
+        setError("NISN tidak sesuai dengan yang terdaftar.");
         return;
       }
 
-      navigate("/input-nisn");
+      navigate("/vote");
     } catch (err) {
       setLoading(false);
       setError("Terjadi kesalahan, coba lagi.");
@@ -120,15 +112,17 @@ const LoginName = () => {
             color="#404040"
             marginY="10px"
           >
-            Masukkan Nama Lengkap*
+            Masukkan NISN*
           </Typography>
           <TextField
             fullWidth
-            label="Contoh Penulisan: Fulana Binti Fulan"
+            label="Masukkan NISN kamu"
             variant="outlined"
+            type="text"
+            inputMode="numeric"
             style={{ outlineColor: "#006787" }}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={nisn}
+            onChange={(e) => setNisn(e.target.value)}
             sx={{ mb: 2 }}
           />
           {error && (
@@ -159,4 +153,4 @@ const LoginName = () => {
   );
 };
 
-export default LoginName;
+export default LoginNISN;

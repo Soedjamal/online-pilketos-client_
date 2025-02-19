@@ -4,6 +4,7 @@ import VotePage from "./pages/VotePage";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import SuccessPage from "./pages/SuccessPage";
 import LoginName from "./pages/LoginName";
+import LoginNISN from "./pages/LoginNISN";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
         {/* Proteksi route vote */}
         <Route element={<ProtectedRoute />}>
           <Route path="/input-name" element={<LoginName />} />
+          <Route path="/input-nisn" element={<LoginNISN />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/success" element={<SuccessPage />} />
         </Route>
