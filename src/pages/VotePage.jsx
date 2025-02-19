@@ -51,6 +51,16 @@ const VotePage = () => {
 
     try {
       if (token.slice(0, 3) == "XII") {
+        const now = new Date()
+        const day = now.getDay()
+        const hour = now.getHours()
+
+        if (day !== 5 || hour < 19 || hour >= 21) {
+          setError("Waktu pemilihan belum dimulai!");
+          setLoading(false);
+          return
+        }
+
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_xii")
@@ -105,6 +115,8 @@ const VotePage = () => {
       }
 
       if (token.slice(0, 2) == "XI") {
+
+
         // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
           .from("students_xi")
