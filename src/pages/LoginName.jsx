@@ -124,7 +124,7 @@ const LoginName = () => {
           </Typography>
           <TextField
             fullWidth
-            label="Contoh Penulisan: Ahmad Wahid Baharuddin"
+            label="Contoh Penulisan: Ahmad Wahid Baharudin"
             variant="outlined"
             style={{ outlineColor: "#006787" }}
             value={name}
