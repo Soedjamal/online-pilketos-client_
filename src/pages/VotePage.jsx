@@ -45,241 +45,107 @@ const VotePage = () => {
     fetchCandidates();
   }, []);
 
+  // const now = new Date()
+  // const day = now.getDay()
+  // const hour = now.getHours()
+
+  // if (day !== 5 || hour < 19 || hour >= 21) {
+  //   setError("Waktu pemilihan belum dimulai!");
+  //   setLoading(false);
+  //   return
+  // }
+
   const handleVote = async (candidateId) => {
     setSubmitLoading((prev) => ({ ...prev, [candidateId]: true }));
     const token = localStorage.getItem("userToken");
-    // const nisn = localStorage.getItem("userNISN");
 
     try {
-      if (token.slice(0, 3) == "XII") {
-        // const now = new Date()
-        // const day = now.getDay()
-        // const hour = now.getHours()
+      const handleVoteForTable = async (tableName, votersTable) => {
+        const now = new Date();
 
-        // if (day !== 5 || hour < 19 || hour >= 21) {
-        //   setError("Waktu pemilihan belum dimulai!");
-        //   setLoading(false);
-        //   return
-        // }
-
-        // Cek pemilih berdasarkan token
         const { data: userData, error: userError } = await supabase
-          .from("students_xii")
-          .select("id, name, voted")
+          .from(tableName)
+          .select("id, name, voted, last_vote_attempt")
           .eq("token", token)
           .single();
 
         if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
 
-        if (userData.voted == true) {
+        if (userData.voted) {
           setError("Kamu sudah pernah memilih");
           localStorage.removeItem("userToken");
           setTimeout(() => navigate("/"), 1200);
-          return;
+          return false;
         }
 
-        const voterId = userData.id;
+        // Check for recent vote attempts (within last 30 seconds)
+        const lastAttempt = userData.last_vote_attempt
+          ? new Date(userData.last_vote_attempt)
+          : null;
+        if (lastAttempt && now - lastAttempt < 30000) {
+          // 30 seconds
+          throw new Error(
+            "Terdeteksi upaya pemilihan bersamaan. Harap tunggu beberapa saat.",
+          );
+        }
+
+        const { error: timestampError } = await supabase
+          .from(tableName)
+          .update({ last_vote_attempt: now.toISOString() })
+          .eq("id", userData.id);
+
+        if (timestampError) throw timestampError;
 
         const { error: voteError } = await supabase.rpc("increment_votes", {
           candidate_id: candidateId,
         });
 
-        if (voteError) {
-          console.error("Error updating votes:", voteError);
-        }
-
         if (voteError) throw voteError;
 
-        const { error: voterError } = await supabase.from("xii_voters").insert([
+        const { error: voterError } = await supabase.from(votersTable).insert([
           {
             voter_name: userData.name,
             has_voted: candidateId,
-            voter_id: voterId,
-            created_at: new Date(),
+            voter_id: userData.id,
+            created_at: now,
           },
         ]);
 
         if (voterError) throw voterError;
 
         const { error: updateError } = await supabase
-          .from("students_xii")
+          .from(tableName)
           .update({ voted: true })
-          .eq("id", voterId);
+          .eq("id", userData.id);
 
         if (updateError) throw updateError;
-        setMessage("Terima kasih! Suara Anda telah tercatat.");
-        localStorage.removeItem("userToken");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("userNISN");
-        setTimeout(() => navigate("/success"), 2000);
-        return;
+
+        return true;
+      };
+
+      let success = false;
+
+      // Handle different user types
+      if (token.slice(0, 3) === "XII") {
+        success = await handleVoteForTable("students_xii", "xii_voters");
+      } else if (token.slice(0, 2) === "XI") {
+        success = await handleVoteForTable("students_xi", "xi_voters");
+      } else if (token.slice(0, 1) === "X") {
+        success = await handleVoteForTable("students_x", "x_voters");
+      } else if (token.slice(0, 2) === "TS") {
+        success = await handleVoteForTable("teacher_and_staff", "ts_voters");
       }
 
-      if (token.slice(0, 2) == "XI") {
-        // Cek pemilih berdasarkan token
-        const { data: userData, error: userError } = await supabase
-          .from("students_xi")
-          .select("id, name, voted")
-          .eq("token", token)
-          .single();
-
-        if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
-
-        if (userData.voted == true) {
-          setError("Kamu sudah pernah memilih");
-          localStorage.removeItem("userToken");
-          setTimeout(() => navigate("/"), 1200);
-          return;
-        }
-
-        const voterId = userData.id;
-
-        const { error: voteError } = await supabase.rpc("increment_votes", {
-          candidate_id: candidateId,
-        });
-
-        if (voteError) {
-          console.error("Error updating votes:", voteError);
-        }
-
-        if (voteError) throw voteError;
-
-        const { error: voterError } = await supabase.from("xi_voters").insert([
-          {
-            voter_name: userData.name,
-            has_voted: candidateId,
-            voter_id: voterId,
-            created_at: new Date(),
-          },
-        ]);
-
-        if (voterError) throw voterError;
-
-        const { error: updateError } = await supabase
-          .from("students_xi")
-          .update({ voted: true })
-          .eq("id", voterId);
-
-        if (updateError) throw updateError;
+      if (success) {
         setMessage("Terima kasih! Suara Anda telah tercatat.");
-        localStorage.removeItem("userToken");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userId");
+        localStorage.clear();
         setTimeout(() => navigate("/success"), 2000);
-        return;
-      }
-
-      if (token.slice(0, 1) == "X") {
-        // Cek pemilih berdasarkan token
-        const { data: userData, error: userError } = await supabase
-          .from("students_x")
-          .select("id, name, voted")
-          .eq("token", token)
-          .single();
-
-        if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
-
-        if (userData.voted == true) {
-          setError("Kamu sudah pernah memilih");
-          localStorage.removeItem("userToken");
-          setTimeout(() => navigate("/"), 1200);
-          return;
-        }
-
-        const voterId = userData.id;
-
-        const { error: voteError } = await supabase.rpc("increment_votes", {
-          candidate_id: candidateId,
-        });
-
-        if (voteError) {
-          console.error("Error updating votes:", voteError);
-        }
-
-        if (voteError) throw voteError;
-
-        const { error: voterError } = await supabase.from("x_voters").insert([
-          {
-            voter_name: userData.name,
-            has_voted: candidateId,
-            voter_id: voterId,
-            created_at: new Date(),
-          },
-        ]);
-
-        if (voterError) throw voterError;
-
-        const { error: updateError } = await supabase
-          .from("students_x")
-          .update({ voted: true })
-          .eq("id", voterId);
-
-        if (updateError) throw updateError;
-        setMessage("Terima kasih! Suara Anda telah tercatat.");
-        localStorage.removeItem("userToken");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userId");
-        setTimeout(() => navigate("/success"), 2000);
-        return;
-      }
-
-      if (token.slice(0, 2) == "TS") {
-        // Cek pemilih berdasarkan token
-        const { data: userData, error: userError } = await supabase
-          .from("teacher_and_staff")
-          .select("id, name, voted")
-          .eq("token", token)
-          .single();
-
-        if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
-
-        if (userData.voted == true) {
-          setError("Kamu sudah pernah memilih");
-          localStorage.removeItem("userToken");
-          setTimeout(() => navigate("/"), 1200);
-          return;
-        }
-
-        const voterId = userData.id;
-        const { error: voteError } = await supabase.rpc("increment_votes", {
-          candidate_id: candidateId,
-        });
-
-        if (voteError) {
-          console.error("Error updating votes:", voteError);
-        }
-
-        if (voteError) throw voteError;
-
-        const { error: voterError } = await supabase.from("ts_voters").insert([
-          {
-            voter_name: userData.name,
-            has_voted: candidateId,
-            voter_id: voterId,
-            created_at: new Date(),
-          },
-        ]);
-
-        if (voterError) throw voterError;
-
-        const { error: updateError } = await supabase
-          .from("teacher_and_staff")
-          .update({ voted: true })
-          .eq("id", voterId);
-
-        if (updateError) throw updateError;
-        setMessage("Terima kasih! Suara Anda telah tercatat.");
-        localStorage.removeItem("userToken");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userId");
-        setTimeout(() => navigate("/success"), 2000);
-        return;
       }
     } catch (err) {
       console.error("Error voting:", err);
-      setError("Gagal mengirim suara, coba lagi.");
+      setError(err.message || "Gagal mengirim suara, coba lagi.");
     } finally {
+      setSubmitLoading((prev) => ({ ...prev, [candidateId]: false }));
       localStorage.removeItem("userToken");
     }
   };
