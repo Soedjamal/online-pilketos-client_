@@ -61,71 +61,85 @@ const VotePage = () => {
 
     try {
       const handleVoteForTable = async (tableName, votersTable) => {
-        const now = new Date();
-
-        const { data: userData, error: userError } = await supabase
+        // 1. Get current user data
+        const { data: userDataArray, error: userError } = await supabase
           .from(tableName)
-          .select("id, name, voted, last_vote_attempt")
-          .eq("token", token)
-          .single();
+          .select("id, name, voted, vote_version")
+          .eq("token", token);
 
-        if (userError || !userData) throw new Error("Pengguna tidak ditemukan");
+        if (userError) throw new Error("Pengguna tidak ditemukan");
 
-        if (userData.voted) {
+        // Check if we got exactly one user
+        if (!userDataArray || userDataArray.length !== 1) {
+          throw new Error("Token tidak valid");
+        }
+
+        const userData = userDataArray[0];
+
+        if (userData.voted === true) {
           setError("Kamu sudah pernah memilih");
           localStorage.removeItem("userToken");
           setTimeout(() => navigate("/"), 1200);
           return false;
         }
 
-        // Check for recent vote attempts (within last 30 seconds)
-        const lastAttempt = userData.last_vote_attempt
-          ? new Date(userData.last_vote_attempt)
-          : null;
-        if (lastAttempt && now - lastAttempt < 30000) {
-          // 30 seconds
+        // 2. Update user's voted status with version check
+        const { data: updateData, error: updateError } = await supabase
+          .from(tableName)
+          .update({
+            voted: true,
+            vote_version: (userData.vote_version || 0) + 1,
+          })
+          .eq("id", userData.id)
+          .eq("vote_version", userData.vote_version || 0)
+          .select();
+
+        if (updateError) throw updateError;
+
+        // Check if update was successful
+        if (!updateData || updateData.length === 0) {
           throw new Error(
-            "Terdeteksi upaya pemilihan bersamaan. Harap tunggu beberapa saat.",
+            "Terdeteksi upaya pemilihan bersamaan. Mohon coba lagi.",
           );
         }
 
-        const { error: timestampError } = await supabase
-          .from(tableName)
-          .update({ last_vote_attempt: now.toISOString() })
-          .eq("id", userData.id);
+        // 3. Check if already voted in voters table
+        const { data: votersData, error: checkError } = await supabase
+          .from(votersTable)
+          .select("id")
+          .eq("voter_id", userData.id);
 
-        if (timestampError) throw timestampError;
+        if (checkError) throw checkError;
 
+        // If vote already exists
+        if (votersData && votersData.length > 0) {
+          throw new Error("Vote ganda terdeteksi");
+        }
+
+        // 4. Increment candidate votes
         const { error: voteError } = await supabase.rpc("increment_votes", {
           candidate_id: candidateId,
         });
 
         if (voteError) throw voteError;
 
+        // 5. Record in voters table
         const { error: voterError } = await supabase.from(votersTable).insert([
           {
             voter_name: userData.name,
             has_voted: candidateId,
             voter_id: userData.id,
-            created_at: now,
+            created_at: new Date(),
           },
         ]);
 
         if (voterError) throw voterError;
-
-        const { error: updateError } = await supabase
-          .from(tableName)
-          .update({ voted: true })
-          .eq("id", userData.id);
-
-        if (updateError) throw updateError;
 
         return true;
       };
 
       let success = false;
 
-      // Handle different user types
       if (token.slice(0, 3) === "XII") {
         success = await handleVoteForTable("students_xii", "xii_voters");
       } else if (token.slice(0, 2) === "XI") {
@@ -149,7 +163,6 @@ const VotePage = () => {
       localStorage.removeItem("userToken");
     }
   };
-
   // Tampilkan loading saat data masih dimuat
   if (loading) {
     return (
