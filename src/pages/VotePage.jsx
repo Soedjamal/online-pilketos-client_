@@ -45,22 +45,25 @@ const VotePage = () => {
     fetchCandidates();
   }, []);
 
-  // const now = new Date()
-  // const day = now.getDay()
-  // const hour = now.getHours()
-
-  // if (day !== 5 || hour < 19 || hour >= 21) {
-  //   setError("Waktu pemilihan belum dimulai!");
-  //   setLoading(false);
-  //   return
-  // }
-
   const handleVote = async (candidateId) => {
     setSubmitLoading((prev) => ({ ...prev, [candidateId]: true }));
     const token = localStorage.getItem("userToken");
 
     try {
       const handleVoteForTable = async (tableName, votersTable) => {
+        if (tableName == "students_xii") {
+          const now = new Date();
+          const day = now.getDay();
+          const hour = now.getHours();
+
+          if (day !== 5 || hour < 18 || hour >= 21) {
+            setError("Waktu pemilihan belum dimulai!");
+            setLoading(false);
+            localStorage.removeItem("userToken");
+            return;
+          }
+        }
+
         // 1. Get current user data
         const { data: userDataArray, error: userError } = await supabase
           .from(tableName)

@@ -29,16 +29,17 @@ const LoginToken = () => {
 
     try {
       if (token.slice(0, 3) == "XII") {
+        const now = new Date();
+        const day = now.getDay();
+        const hour = now.getHours();
 
-        // const now = new Date()
-        // const day = now.getDay()
-        // const hour = now.getHours()
-
-        // if (day !== 3 || hour < 11 || hour >= 12) {
-        //   setError(`Waktu pemilihan belum dimulai!, Dimulai pukul 19:00 - 21:00 WIB`);
-        //   setLoading(false);
-        //   return
-        // }
+        if (day !== 5 || hour < 18 || hour >= 21) {
+          setError(
+            `Waktu pemilihan belum dimulai!, Dimulai pada hari Jumat pukul 18:00 - 21:00 WIB`,
+          );
+          setLoading(false);
+          return;
+        }
         const { data, error: dbError } = await supabase
           .from("students_xii")
           .select("*")
@@ -59,11 +60,7 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/input-name");
         return;
-      } else {
-        setError("Token tidak valid! Periksa kembali token Anda.");
-      }
-
-      if (token.slice(0, 2) == "XI") {
+      } else if (token.slice(0, 2) == "XI") {
         const { data, error: dbError } = await supabase
           .from("students_xi")
           .select("*")
@@ -84,11 +81,7 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/vote");
         return;
-      } else {
-        setError("Token tidak valid! Periksa kembali token Anda.");
-      }
-
-      if (token.slice(0, 1) == "X") {
+      } else if (token.slice(0, 1) == "X") {
         const { data, error: dbError } = await supabase
           .from("students_x")
           .select("*")
@@ -109,11 +102,7 @@ const LoginToken = () => {
         localStorage.setItem("userName", data.name);
         navigate("/vote");
         return;
-      } else {
-        setError("Token tidak valid! Periksa kembali token Anda.");
-      }
-
-      if (token.slice(0, 2) == "TS") {
+      } else if (token.slice(0, 2) == "TS") {
         const { data, error: dbError } = await supabase
           .from("teacher_and_staff")
           .select("*")
@@ -201,10 +190,7 @@ const LoginToken = () => {
             sx={{ mb: 2 }}
           />
           {error && (
-            <Alert
-              style={{ width: "90%", marginBottom: "10px" }}
-              severity="error"
-            >
+            <Alert fullWidth style={{ marginBottom: "10px" }} severity="error">
               {error}
             </Alert>
           )}
