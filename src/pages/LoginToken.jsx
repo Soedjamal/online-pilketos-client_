@@ -190,7 +190,10 @@ const LoginToken = () => {
             sx={{ mb: 2 }}
           />
           {error && (
-            <Alert fullWidth style={{ marginBottom: "10px" }} severity="error">
+            <Alert
+              style={{ width: "92%", marginBottom: "10px" }}
+              severity="error"
+            >
               {error}
             </Alert>
           )}
