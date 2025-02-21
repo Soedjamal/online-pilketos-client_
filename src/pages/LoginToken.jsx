@@ -35,7 +35,7 @@ const LoginToken = () => {
 
         if (day !== 5 || hour < 18 || hour >= 21) {
           setError(
-            `Waktu pemilihan belum dimulai!, Dimulai pada hari Jumat pukul 18:00 - 21:00 WIB`,
+            `Waktu pemilihan belum dimulai atau sudah selesai!, Dimulai pada hari Jumat pukul 18:00 - 21:00 WIB`,
           );
           setLoading(false);
           return;
@@ -191,7 +191,7 @@ const LoginToken = () => {
           />
           {error && (
             <Alert
-              style={{ width: "92%", marginBottom: "10px" }}
+              style={{ width: "92%", marginBottom: "10px", textAlign: "left" }}
               severity="error"
             >
               {error}
